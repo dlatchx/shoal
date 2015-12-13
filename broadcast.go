@@ -3,7 +3,6 @@ package main
 import (
 	"log"
 	"net"
-	"strings"
 	"sync"
 	"time"
 )
@@ -69,11 +68,8 @@ func (b *Broadcaster) Broadcast(msg []byte) {
 	for _, addr := range b.addrs {
 		sendMulti, err := net.DialUDP("udp6", nil, addr)
 		if err != nil {
-			if strings.Contains(err.Error(), "cannot assign requested address") || strings.Contains(err.Error(), "network is unreachable") {
-				continue
-			} else {
-				log.Fatal(err)
-			}
+			log.Print(err)
+			continue
 		}
 		sendMulti.Write(msg)
 		sendMulti.Close()

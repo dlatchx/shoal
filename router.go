@@ -57,7 +57,8 @@ func router(in chan<- []byte, out chan []byte, virtualIP net.IP, ifaceName strin
 				//log.Printf("%s -> %s", IPSrc(outPacket).String(), IPDst(outPacket).String())
 				socket, err := net.DialUDP("udp6", nil, nextHop)
 				if err != nil {
-					log.Fatal(err)
+					log.Print(err)
+					continue
 				}
 
 				socket.SetWriteBuffer(MAXDATAGRAMSIZE)
