@@ -5,8 +5,8 @@ import (
 	"log"
 	"math/rand"
 	"net"
-	"time"
 	"sync"
+	"time"
 )
 
 type RoutingRule struct {
@@ -28,7 +28,7 @@ type RoutingTable struct {
 func NewRoutingTable(ip net.IP, broadcaster *Broadcaster) *RoutingTable {
 	rt := &RoutingTable{make(map[string][]*RoutingRule), ip, &sync.RWMutex{}, 0, broadcaster}
 
-	go func () {
+	go func() {
 		for {
 			rt.AnnounceAll()
 			time.Sleep(time.Second / 15)
@@ -145,7 +145,6 @@ func (rt *RoutingTable) AnnounceAll() {
 	binary.LittleEndian.PutUint16(msg[34:50], rt.sequence)
 	rt.sequence++
 	rt.broadcaster.Broadcast(msg)
-
 
 	// announce my other routes
 	msg2 := make([]byte, 50)

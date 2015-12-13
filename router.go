@@ -42,12 +42,10 @@ func router(in chan<- []byte, out chan []byte, virtualIP net.IP, ifaceName strin
 				sequence := binary.LittleEndian.Uint16(buffer[34:50])
 
 				//log.Printf("%s can join %s with %d hops (sequence %d)", src.IP.String(), vIP.String(), buffer[1], sequence)
-				routingTable.SetRule(buffer[1] + 1, src, vIP, sequence)
+				routingTable.SetRule(buffer[1]+1, src, vIP, sequence)
 			}
 		}
 	}()
-
-
 
 	// handle outgoing packets
 	go func() {
@@ -71,9 +69,7 @@ func router(in chan<- []byte, out chan []byte, virtualIP net.IP, ifaceName strin
 		}
 	}()
 
-
-
-	unicastAddr, err := net.ResolveUDPAddr("udp6", ":" + strconv.Itoa(PORT_UNICAST))
+	unicastAddr, err := net.ResolveUDPAddr("udp6", ":"+strconv.Itoa(PORT_UNICAST))
 	if err != nil {
 		log.Fatal(err)
 	}
