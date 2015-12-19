@@ -38,35 +38,36 @@ func NewRoutingTable(ip net.IP, broadcaster *Broadcaster) *RoutingTable {
 
 	go rt.deleteOldRoutesJob()
 
-	// DEBUG : print routing table
-	go func() {
-		for {
-			rt.mutex.RLock()
-			log.Printf("+----------+-----+-------+---+----------------------------+--------+")
-			log.Printf("|   dest   | hop |  seq  | p |          next hop          | iface  |")
-			log.Printf("+----------+-----+-------+---+----------------------------+--------+")
-			for ip, rules := range rt.routes {
-				if len(rules) > 0 {
-					for i, rule := range rules {
-						pub := ' '
-						if rule.Public {
-							pub = 'X'
+	if *debug_showRoutes {
+		go func() {
+			for {
+				rt.mutex.RLock()
+				log.Printf("+----------+-----+-------+---+----------------------------+--------+")
+				log.Printf("|   dest   | hop |  seq  | p |          next hop          | iface  |")
+				log.Printf("+----------+-----+-------+---+----------------------------+--------+")
+				for ip, rules := range rt.routes {
+					if len(rules) > 0 {
+						for i, rule := range rules {
+							pub := ' '
+							if rule.Public {
+								pub = 'X'
+							}
+							if i == 0 {
+								log.Printf("| %8s | %3d | %5d | %c | %26s |%7s |", net.IP(ip).String(), rule.Distance, rule.Sequence, pub, rule.NextHop.IP.String(), rule.NextHop.Zone)
+							} else {
+								log.Printf("|          | %3d | %5d | %c | %26s |%7s |", rule.Distance, rule.Sequence, pub, rule.NextHop.IP.String(), rule.NextHop.Zone)
+							}
 						}
-						if i == 0 {
-							log.Printf("| %8s | %3d | %5d | %c | %26s |%7s |", net.IP(ip).String(), rule.Distance, rule.Sequence, pub, rule.NextHop.IP.String(), rule.NextHop.Zone)
-						} else {
-							log.Printf("|          | %3d | %5d | %c | %26s |%7s |", rule.Distance, rule.Sequence, pub, rule.NextHop.IP.String(), rule.NextHop.Zone)
-						}
+						log.Printf("+----------+-----+-------+---+----------------------------+--------+")
 					}
-					log.Printf("+----------+-----+-------+---+----------------------------+--------+")
 				}
-			}
-			rt.mutex.RUnlock()
-			log.Printf("\n")
+				rt.mutex.RUnlock()
+				log.Printf("\n")
 
-			time.Sleep(time.Second / 2)
-		}
-	}()
+				time.Sleep(time.Second / 2)
+			}
+		}()
+	}
 
 	return rt
 }

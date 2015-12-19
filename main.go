@@ -21,6 +21,9 @@ var usage = func() {
 	flag.PrintDefaults()
 }
 
+var debug_showPackets = flag.Bool("showpackets", false, "log every routed packets. may drastically drain performance, use it for debug")
+var debug_showRoutes = flag.Bool("showroutes", false, "print routing table every 0.5s. use it for debug")
+
 func main() {
 	flag.Usage = usage
 	flag.Parse()

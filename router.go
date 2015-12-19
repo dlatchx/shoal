@@ -51,10 +51,12 @@ func router(in chan<- []byte, out chan []byte, virtualIP net.IP, ifaceName strin
 	go func() {
 		for {
 			outPacket := <-out
-			//log.Printf("%s -> %s", IPSrc(outPacket).String(), IPDst(outPacket).String())
 			nextHop := routingTable.NextHop(IPDst(outPacket))
 			if nextHop != nil {
-				//log.Printf("%s -> %s", IPSrc(outPacket).String(), IPDst(outPacket).String())
+				if *debug_showPackets {
+					log.Printf("%s -> %s", IPSrc(outPacket).String(), IPDst(outPacket).String())
+				}
+
 				socket, err := net.DialUDP("udp6", nil, nextHop)
 				if err != nil {
 					log.Print(err)
@@ -64,8 +66,8 @@ func router(in chan<- []byte, out chan []byte, virtualIP net.IP, ifaceName strin
 				socket.SetWriteBuffer(MAXDATAGRAMSIZE)
 				socket.Write(outPacket)
 				socket.Close()
-			} else {
-				//log.Printf("%s -> %s (dropped)", IPSrc(outPacket).String(), IPDst(outPacket).String())
+			} else if *debug_showPackets {
+				log.Printf("%s -> %s (dropped)", IPSrc(outPacket).String(), IPDst(outPacket).String())
 			}
 		}
 	}()
@@ -93,7 +95,9 @@ func router(in chan<- []byte, out chan []byte, virtualIP net.IP, ifaceName strin
 
 		packet[7]--
 
-		//log.Printf("%s <- %s", IPDst(packet).String(), IPSrc(packet).String())
+		if *debug_showPackets {
+			log.Printf("%s <- %s", IPDst(packet).String(), IPSrc(packet).String())
+		}
 
 		if IPDst(packet).Equal(virtualIP) {
 			in <- packet
