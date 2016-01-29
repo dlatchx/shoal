@@ -5,8 +5,8 @@ import (
 	"net"
 	"strconv"
 
-	"./water"
-	"./water/waterutil"
+	"github.com/songgao/water"
+	"github.com/songgao/water/waterutil"
 )
 
 func setupInterface(in <-chan []byte, out chan<- []byte, virtualIPNet *net.IPNet) string {
