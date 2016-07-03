@@ -11,7 +11,7 @@ func router(in chan<- []byte, out chan []byte, virtualIP net.IP, ifaceName strin
 	parseCommand("sysctl net.ipv4.icmp_echo_ignore_broadcasts=0")
 
 	broadcaster := NewBroadcaster(ifaceName)
-	routingTable := NewRoutingTable(virtualIP, broadcaster)
+	routingTable := NewRoutingTable(virtualIP, ifaceName, broadcaster)
 
 	multicastIP := net.IPv6linklocalallnodes // ff02::1
 	multicastAddr := &net.UDPAddr{multicastIP, PORT_MULTICAST, ""}

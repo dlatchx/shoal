@@ -20,13 +20,14 @@ type RoutingRule struct {
 type RoutingTable struct {
 	routes      map[string][]*RoutingRule
 	virtualIP   net.IP
+	ifaceName   string
 	mutex       *sync.RWMutex
 	sequence    uint16
 	broadcaster *Broadcaster
 }
 
-func NewRoutingTable(ip net.IP, broadcaster *Broadcaster) *RoutingTable {
-	rt := &RoutingTable{make(map[string][]*RoutingRule), ip, &sync.RWMutex{}, 0, broadcaster}
+func NewRoutingTable(ip net.IP, ifaceName string, broadcaster *Broadcaster) *RoutingTable {
+	rt := &RoutingTable{make(map[string][]*RoutingRule), ip, ifaceName, &sync.RWMutex{}, 0, broadcaster}
 
 	go func() {
 		for {
@@ -119,6 +120,8 @@ func (rt *RoutingTable) SetRule(distance uint8, nextHop *net.UDPAddr, vIP net.IP
 		copy(msg[18:34], rt.virtualIP)
 		binary.LittleEndian.PutUint16(msg[34:50], sequence)
 		rt.broadcaster.Broadcast(msg)
+
+		parseCommand("ip route add " + vIP.String() + " dev " + rt.ifaceName)
 	} else {
 		add := true
 		for _, rule := range rt.routes[string(vIP)] {
@@ -186,7 +189,12 @@ func (rt *RoutingTable) deleteOldRoutesJob() {
 		for ip, rules := range rt.routes {
 			for i, rule := range rules {
 				if time.Now().After(rule.Time.Add(3 * time.Second / 15)) {
-					rt.routes[ip] = append(rt.routes[ip][:i], rt.routes[ip][i+1:]...)
+					if len(rt.routes[ip]) == 1 {
+						parseCommand("ip route del " + net.IP(ip).String() + " dev " + rt.ifaceName)
+						delete(rt.routes, ip)
+					} else {
+						rt.routes[ip] = append(rt.routes[ip][:i], rt.routes[ip][i+1:]...)
+					}
 					pause = false
 					break
 				}

@@ -16,7 +16,7 @@ const (
 )
 
 var usage = func() {
-	fmt.Printf("usage : shoal [options...] ip/mask \n\n")
+	fmt.Printf("usage : shoal [options...] ip \n\n")
 	fmt.Printf("options :\n")
 	flag.PrintDefaults()
 }
@@ -36,16 +36,15 @@ func main() {
 	log.Print("starting shoal")
 
 	// parse the node's vitual ip
-	virtualIP, virtualIPNet, err := net.ParseCIDR(flag.Arg(0))
-	if err != nil {
-		log.Fatal(err)
+	virtualIP := net.ParseIP(flag.Arg(0))
+	if virtualIP == nil {
+		log.Fatal("invalid ip")
 	}
-	virtualIPNet.IP = virtualIP // replace the block ip by the one provided in flag.Arg(0)
-	log.Printf("virtual IP : %s", virtualIPNet.String())
+	log.Printf("virtual IP : %s", virtualIP.String())
 
 	// connect TUN interface with router core
 	in := make(chan []byte)
 	out := make(chan []byte)
-	ifaceName := setupInterface(in, out, virtualIPNet)
+	ifaceName := setupInterface(in, out, virtualIP)
 	router(in, out, virtualIP, ifaceName)
 }
