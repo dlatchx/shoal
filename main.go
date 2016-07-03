@@ -21,6 +21,7 @@ var usage = func() {
 	flag.PrintDefaults()
 }
 
+var ifaceName = flag.String("interface", "", "virtual interface name")
 var debug_showPackets = flag.Bool("showpackets", false, "log every routed packets. may drastically drain performance, use it for debug")
 var debug_showRoutes = flag.Bool("showroutes", false, "print routing table every 0.5s. use it for debug")
 
@@ -45,6 +46,6 @@ func main() {
 	// connect TUN interface with router core
 	in := make(chan []byte)
 	out := make(chan []byte)
-	ifaceName := setupInterface(in, out, virtualIP)
-	router(in, out, virtualIP, ifaceName)
+	setupInterface(in, out, ifaceName, virtualIP)
+	router(in, out, virtualIP, *ifaceName)
 }
